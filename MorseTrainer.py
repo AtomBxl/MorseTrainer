@@ -5,6 +5,7 @@ from scipy.io.wavfile import write
 import datetime
 import os
 import re 
+import tkinter.filedialog as fd
 
 MORSE_CODE_DICT = {
     'A': '.-',    'B': '-...',  'C': '-.-.', 'D': '-..',   'E': '.',
@@ -19,6 +20,8 @@ MORSE_CODE_DICT = {
 
 SAMPLE_RATE = 44100  # 采样率
 FREQ = 700           # 声音频率
+
+output_dir = os.path.dirname(os.path.abspath(__file__))
 
 # 生成一个音符
 def tone(duration):
@@ -56,6 +59,13 @@ def generate_audio(text, repeat=1, filename="output.wav", unit=0.1):
         total_wave = np.concatenate((total_wave, morse_to_wave(text, unit), silence(unit * 7)))
     int_wave = np.int16(total_wave * 32767)
     write(filename, SAMPLE_RATE, int_wave)
+    
+def choose_folder():
+    global output_dir
+    selected_dir = fd.askdirectory(title="选择导出文件夹")
+    if selected_dir:
+        output_dir = selected_dir
+        label_folder.config(text=f"导出目录：{output_dir}")
 
 def generate_file():
     phrase = entry_phrase.get().strip()
@@ -86,7 +96,7 @@ def generate_file():
             filename_input += ".wav"
         filename = filename_input
 
-    full_path = os.path.join(script_dir, filename)
+    full_path = os.path.join(outbut_dir, filename)
 
     try:
         generate_audio(phrase, repeat, full_path, unit_sec)
@@ -119,6 +129,10 @@ scale_speed = tk.Scale(window, from_=50, to=300, orient=tk.HORIZONTAL, length=25
 scale_speed.set(100)  # 默认 100 毫秒
 scale_speed.pack()
 
+btn_choose_folder = tk.Button(window, text="选择导出文件夹", command=choose_folder)
+btn_choose_folder.pack(pady=(10, 0))
+
 tk.Button(window, text="生成音频", command=generate_file).pack(pady=20)
 
 window.mainloop()
+
